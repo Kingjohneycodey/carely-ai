@@ -4,9 +4,20 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Heart, Mail, Lock, Eye, EyeOff, ArrowRight } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 export default function LoginPage() {
   const [showPw, setShowPw] = useState(false);
+  const router = useRouter();
+
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    toast.success("Welcome back!", {
+      description: "You have successfully signed in to Care AI.",
+    });
+    router.push("/dashboard");
+  };
 
   return (
     <div className="min-h-screen flex">
@@ -40,7 +51,7 @@ export default function LoginPage() {
           <h1 className="font-display text-2xl font-bold mb-1">Log in</h1>
           <p className="text-muted-foreground text-sm mb-8">Enter your credentials to continue</p>
 
-          <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
+          <form className="space-y-4" onSubmit={handleLogin}>
             <div className="space-y-2">
               <Label htmlFor="email">Email or Phone</Label>
               <div className="relative">
@@ -65,11 +76,9 @@ export default function LoginPage() {
               </label>
               <a href="#" className="text-primary hover:underline">Forgot password?</a>
             </div>
-            <Link href="/dashboard">
-              <Button variant="hero" className="w-full h-11 mt-2">
-                Log in <ArrowRight className="ml-1 h-4 w-4" />
-              </Button>
-            </Link>
+            <Button type="submit" variant="hero" className="w-full h-11 mt-2">
+              Log in <ArrowRight className="ml-1 h-4 w-4" />
+            </Button>
           </form>
 
           <div className="relative my-6">
