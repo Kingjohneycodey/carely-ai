@@ -19,7 +19,6 @@ const mainNav = [
 ];
 
 const healthNav = [
-  { title: "Health Wallet", url: "/wallet", icon: Wallet },
   { title: "Medical Records", url: "/records", icon: FileText },
   { title: "Upload & Scan", url: "/upload", icon: Upload },
   { title: "Vitals", url: "/vitals", icon: Activity },

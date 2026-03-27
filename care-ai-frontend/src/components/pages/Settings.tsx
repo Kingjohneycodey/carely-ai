@@ -61,7 +61,7 @@ export default function SettingsPage() {
           <div className="space-y-4">
             {[
               { label: "AI data use for model improvement", desc: "Allow anonymized data to improve AI accuracy", default: false },
-              { label: "Share records with doctors", desc: "Allow doctors to access your health wallet", default: true },
+              { label: "Share records with doctors", desc: "Allow doctors to access your health records", default: true },
               { label: "Location services", desc: "Required for Emergency Mode and nearby facilities", default: true },
             ].map((item, i) => (
               <div key={i} className="flex items-center justify-between">

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { CheckCircle2, CreditCard, Wallet, Download, ChevronRight } from "lucide-react";
 
 const plans = [
-  { name: "Care Basic", price: "₦0", period: "/month", features: ["5 AI symptom checks/month", "Health tips", "Emergency info", "Health wallet"], popular: false, current: false },
+  { name: "Care Basic", price: "₦0", period: "/month", features: ["5 AI symptom checks/month", "Health tips", "Emergency info", "Health records"], popular: false, current: false },
   { name: "Care Plus", price: "₦2,500", period: "/month", features: ["Everything in Basic", "Unlimited AI consults", "2 doctor chat sessions", "Lab result analysis",], popular: true, current: true },
   { name: "Care Pro", price: "₦5,000", period: "/month", features: ["Everything in Plus", "Unlimited doctor access", "Priority support", "Chronic care tracking"], popular: false, current: false },
 ];

@@ -22,7 +22,7 @@ const features = [
   },
   {
     icon: Wallet,
-    title: "Health Wallet",
+    title: "Health Records",
     desc: "Your complete medical history in one place — diagnoses, prescriptions, lab results, and vitals.",
   },
   {
@@ -43,7 +43,7 @@ const features = [
 ];
 
 const plans = [
-  { name: "Care Basic", price: "₦0", period: "/month", features: ["5 AI symptom checks/month", "Health tips", "Emergency info", "Health wallet"], popular: false },
+  { name: "Care Basic", price: "₦0", period: "/month", features: ["5 AI symptom checks/month", "Health tips", "Emergency info", "Health records"], popular: false },
   { name: "Care Plus", price: "₦2,500", period: "/month", features: ["Everything in Basic", "Unlimited AI consults", "2 doctor chat sessions", "Lab result analysis",], popular: true },
   { name: "Care Pro", price: "₦5,000", period: "/month", features: ["Everything in Plus", "Unlimited doctor access", "Priority support", "Chronic care tracking"], popular: false },
 ];
@@ -100,7 +100,7 @@ export default function LandingPage() {
               <br />and acted upon
             </motion.h1>
             <motion.p {...fadeUp} transition={{ delay: 0.2 }} className="text-lg md:text-xl text-muted-foreground max-w-xl mb-8 leading-relaxed">
-              AI-powered symptom triage, personal health wallet, image diagnosis, and instant doctor access — built for Nigeria, designed for Africa.
+              AI-powered symptom triage, personal health records, image diagnosis, and instant doctor access — built for Nigeria, designed for Africa.
             </motion.p>
             <motion.div {...fadeUp} transition={{ delay: 0.3 }} className="flex flex-wrap gap-3">
               <Link href="/signup">

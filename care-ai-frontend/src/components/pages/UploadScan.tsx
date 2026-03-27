@@ -78,9 +78,9 @@ export default function UploadScan() {
       } else {
         await api.post("/health/records", {
           title: result.data.title || "New AI Record",
-          type: result.data.category || "Lab Report",
+          type: result.data.category || "Medical Record",
           file_path: "ai-generated",
-          summary: result.data.summary
+          summary: result.data // Save the ENTIRE extracted data object
         });
       }
       toast.success(`Saved to your ${result.type === 'vital' ? 'Vitals' : 'Medical Records'}!`);

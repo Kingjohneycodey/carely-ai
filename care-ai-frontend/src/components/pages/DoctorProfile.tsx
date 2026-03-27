@@ -58,7 +58,7 @@ export default function DoctorProfile() {
         <CardContent className="p-4 flex items-center justify-between">
           <div>
             <p className="text-sm font-medium">Share AI Health Summary</p>
-            <p className="text-xs text-muted-foreground">Send your health wallet summary to the doctor before the session</p>
+            <p className="text-xs text-muted-foreground">Send your health record summary to the doctor before the session</p>
           </div>
           <div className="h-6 w-11 rounded-full bg-primary relative cursor-pointer">
             <div className="h-5 w-5 bg-primary-foreground rounded-full absolute right-0.5 top-0.5 shadow-sm" />
