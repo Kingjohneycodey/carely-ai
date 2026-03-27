@@ -11,7 +11,7 @@ type User = {
 type AuthContextType = {
   user: User | null;
   loading: boolean;
-  login: (access_token: string) => Promise<void>;
+  login: (access_token: string, refresh_token: string) => Promise<void>;
   logout: () => void;
 };
 
@@ -42,13 +42,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  const login = async (access_token: string) => {
+  const login = async (access_token: string, refresh_token: string) => {
     localStorage.setItem("access_token", access_token);
+    localStorage.setItem("refresh_token", refresh_token);
     await fetchUser();
   };
 
   const logout = () => {
     localStorage.removeItem("access_token");
+    localStorage.removeItem("refresh_token");
     setUser(null);
   };
 

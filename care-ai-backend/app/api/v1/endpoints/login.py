@@ -1,10 +1,11 @@
 from datetime import timedelta
 from typing import Any
+from jose import jwt
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from app.api import deps
-from app.api.v1.auth_schemas import Token
+from app.api.v1.auth_schemas import Token, TokenRefresh
 from app.core import security
 from app.core.config import settings
 from app.models.user import User
@@ -34,6 +35,46 @@ def login_access_token(
         "access_token": security.create_access_token(
             user.id, expires_delta=access_token_expires
         ),
+        "refresh_token": security.create_refresh_token(user.id),
+        "token_type": "bearer",
+    }
+
+
+@router.post("/refresh-token", response_model=Token)
+def refresh_token(
+    token_data: TokenRefresh,
+    db: Session = Depends(deps.get_db)
+) -> Any:
+    """
+    Refresh access token
+    """
+    try:
+        payload = jwt.decode(
+            token_data.refresh_token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM]
+        )
+        if not payload.get("refresh"):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid refresh token",
+            )
+        user_id = payload.get("sub")
+    except (jwt.JWTError, ValueError):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Could not validate credentials",
+        )
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    elif not user.is_active:
+        raise HTTPException(status_code=400, detail="Inactive user")
+    
+    access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+    return {
+        "access_token": security.create_access_token(
+            user.id, expires_delta=access_token_expires
+        ),
+        "refresh_token": token_data.refresh_token,  # Or rotate it if preferred
         "token_type": "bearer",
     }
 

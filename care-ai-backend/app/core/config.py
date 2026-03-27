@@ -6,9 +6,11 @@ class Settings(BaseSettings):
     PROJECT_NAME: str = "Care AI"
     API_V1_STR: str = "/api/v1"
     
-    SECRET_KEY: str = "SUPER_SECRET_KEY_CHANGEME"  # Should be changed in production
+    SECRET_KEY: str = ""
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+    REFRESH_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 7  # 7 days
+    GEMINI_API_KEY: Optional[str] = None
     
     # MySQL Database Configuration
     MYSQL_SERVER: str = "localhost"

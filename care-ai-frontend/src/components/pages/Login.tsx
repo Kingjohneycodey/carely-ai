@@ -31,7 +31,7 @@ export default function LoginPage() {
         },
       });
       
-      await login(response.data.access_token);
+      await login(response.data.access_token, response.data.refresh_token);
       toast.success("Welcome back!", {
         description: "You have successfully signed in to Care AI.",
       });

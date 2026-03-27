@@ -1,11 +1,10 @@
 from sqlalchemy import Column, Integer, String, Boolean, DateTime
+from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
-from sqlalchemy.ext.declarative import declarative_base
-
-Base = declarative_base()
+from app.db.base_class import Base
 
 class User(Base):
-    __tablename__ = "users"
+    __tablename__ = "user"
 
     id = Column(Integer, primary_key=True, index=True)
     full_name = Column(String(255), index=True)
@@ -15,3 +14,8 @@ class User(Base):
     is_superuser = Column(Boolean(), default=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+    chat_sessions = relationship("ChatSession", back_populates="user", cascade="all, delete-orphan")
+    medical_records = relationship("MedicalRecord", back_populates="user", cascade="all, delete-orphan")
+    vitals = relationship("Vital", back_populates="user", cascade="all, delete-orphan")
+    wallet_items = relationship("WalletItem", back_populates="user", cascade="all, delete-orphan")
