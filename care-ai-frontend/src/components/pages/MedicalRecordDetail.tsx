@@ -46,7 +46,7 @@ export default function MedicalRecordDetail() {
 
   const handleDelete = async () => {
     if (!confirm("Are you sure you want to permanently delete this clinical record?")) return;
-    
+
     setIsDeleting(true);
     try {
       await api.delete(`/health/records/${id}`);
@@ -73,29 +73,29 @@ export default function MedicalRecordDetail() {
     <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-6 duration-700 pb-32 font-sans">
       {/* Action Bar */}
       <div className="flex items-center justify-between border-b border-slate-200 pb-6">
-        <Button 
-          variant="ghost" 
+        <Button
+          variant="ghost"
           onClick={() => router.push('/records')}
           className="rounded-lg h-11 text-slate-400 hover:text-slate-900 group"
         >
           <ChevronLeft className="h-5 w-5 mr-2 group-hover:-translate-x-1 transition-transform" /> Back to Records
         </Button>
         <div className="flex gap-2">
-           <Button variant="outline" className="rounded-lg h-11 border-slate-200 font-bold px-5 text-slate-600">
-              <Printer className="h-4 w-4 mr-2" /> Print
-           </Button>
-           <Button variant="outline" className="rounded-lg h-11 border-slate-200 font-bold px-5 text-slate-600">
-              <Share2 className="h-4 w-4 mr-2" /> Share
-           </Button>
-           <Button 
-             variant="outline" 
-             onClick={handleDelete}
-             disabled={isDeleting}
-             className="rounded-lg h-11 border-slate-200 font-bold px-5 text-red-500 hover:bg-red-50 hover:border-red-100"
-           >
-              {isDeleting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Trash2 className="h-4 w-4 mr-2" />}
-              Delete
-           </Button>
+          <Button variant="outline" className="rounded-lg h-11 border-slate-200 font-bold px-5 text-slate-600">
+            <Printer className="h-4 w-4 mr-2" /> Print
+          </Button>
+          <Button variant="outline" className="rounded-lg h-11 border-slate-200 font-bold px-5 text-slate-600">
+            <Share2 className="h-4 w-4 mr-2" /> Share
+          </Button>
+          <Button
+            variant="outline"
+            onClick={handleDelete}
+            disabled={isDeleting}
+            className="rounded-lg h-11 border-slate-200 font-bold px-5 text-red-500 hover:bg-red-50 hover:border-red-100"
+          >
+            {isDeleting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Trash2 className="h-4 w-4 mr-2" />}
+            Delete
+          </Button>
         </div>
       </div>
 
@@ -108,10 +108,10 @@ export default function MedicalRecordDetail() {
               <div className="space-y-2">
                 <h2 className="text-3xl font-black tracking-tighter text-slate-900 uppercase">CARE AI <span className="text-primary tracking-tighter">DIAGNOSTICS</span></h2>
                 <div className="flex items-center gap-2">
-                   <div className="h-4 w-4 bg-primary/10 rounded flex items-center justify-center">
-                      <Sparkles className="h-2.5 w-2.5 text-primary" />
-                   </div>
-                   <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">AI-Powered Clinical Analysis Report</p>
+                  <div className="h-4 w-4 bg-primary/10 rounded flex items-center justify-center">
+                    <Sparkles className="h-2.5 w-2.5 text-primary" />
+                  </div>
+                  <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">AI-Powered Clinical Analysis Report</p>
                 </div>
               </div>
               <div className="text-left md:text-right space-y-1">
@@ -123,66 +123,66 @@ export default function MedicalRecordDetail() {
             </div>
 
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-12">
-               {[
-                 { l: "Report Identifier", v: `CAI-${record.id.toString().padStart(6, '0')}` },
-                 { l: "Document Type", v: record.type },
-                 { l: "Clinical Origin", v: "Digital Scan Analysis" },
-                 { l: "Integrity Status", v: "Patient Authenticated" }
-               ].map((item, i) => (
-                 <div key={i} className="space-y-1.5">
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">{item.l}</p>
-                    <p className="text-xs font-bold text-slate-900 uppercase tracking-tight">{item.v}</p>
-                 </div>
-               ))}
+              {[
+                { l: "Report Identifier", v: `CAI-${record.id.toString().padStart(6, '0')}` },
+                { l: "Document Type", v: record.type },
+                { l: "Clinical Origin", v: "Digital Scan Analysis" },
+                { l: "Integrity Status", v: "Patient Authenticated" }
+              ].map((item, i) => (
+                <div key={i} className="space-y-1.5">
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">{item.l}</p>
+                  <p className="text-xs font-bold text-slate-900 uppercase tracking-tight">{item.v}</p>
+                </div>
+              ))}
             </div>
           </div>
 
           {/* Clinical Record Body */}
           <div className="p-10 md:p-16 bg-white min-h-[600px]">
-             <div className="mb-20">
-                <div className="flex items-center gap-4 mb-12">
-                   <h3 className="text-[12px] font-black text-slate-900 uppercase tracking-[0.4em] pb-1 border-b-4 border-slate-900 leading-none">Record Outcome Manifest</h3>
-                </div>
+            <div className="mb-20">
+              <div className="flex items-center gap-4 mb-12">
+                <h3 className="text-[12px] font-black text-slate-900 uppercase tracking-[0.4em] pb-1 border-b-4 border-slate-900 leading-none">Record Outcome Manifest</h3>
+              </div>
 
-                <div className="space-y-14">
-                  {record.summary ? (
-                    typeof record.summary === 'string' ? (
-                      <div className="space-y-4">
-                        <p className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em] leading-none">Clinical Observations</p>
-                        <p className="text-base font-medium leading-[1.8] text-slate-600 bg-slate-50/50 p-6 rounded-lg border border-slate-100">{record.summary}</p>
-                      </div>
-                    ) : (
-                      Object.entries(record.summary).map(([key, val]: [string, any], i) => (
-                        <DataItem key={i} label={key} value={val} />
-                      ))
-                    )
-                  ) : (
-                    <div className="py-20 flex flex-col items-center justify-center gap-4 text-center">
-                       <AlertCircle className="h-10 w-10 text-slate-200" />
-                       <p className="text-sm font-bold text-slate-300 uppercase tracking-widest">Detailed Analysis Data Not Present</p>
+              <div className="space-y-14">
+                {record.summary ? (
+                  typeof record.summary === 'string' ? (
+                    <div className="space-y-4">
+                      <p className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em] leading-none">Clinical Observations</p>
+                      <p className="text-base font-medium leading-[1.8] text-slate-600 bg-slate-50/50 p-6 rounded-lg border border-slate-100">{record.summary}</p>
                     </div>
-                  )}
-                </div>
-             </div>
+                  ) : (
+                    Object.entries(record.summary).map(([key, val]: [string, any], i) => (
+                      <DataItem key={i} label={key} value={val} />
+                    ))
+                  )
+                ) : (
+                  <div className="py-20 flex flex-col items-center justify-center gap-4 text-center">
+                    <AlertCircle className="h-10 w-10 text-slate-200" />
+                    <p className="text-sm font-bold text-slate-300 uppercase tracking-widest">Detailed Analysis Data Not Present</p>
+                  </div>
+                )}
+              </div>
+            </div>
 
-             {/* Footer Legal/Signature */}
-             <div className="mt-32 pt-12 border-t border-slate-100 flex flex-col md:flex-row justify-between items-end gap-10">
-                <div className="max-w-sm space-y-3">
-                   <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">Legal Information</p>
-                   <p className="text-[11px] font-medium text-slate-400 italic leading-[1.6]">
-                      This document is a digital representation of a medical scan processed via Care AI. It is provided for summary and reference—final clinical interpretation belongs to a licensed medical professional.
-                   </p>
+            {/* Footer Legal/Signature */}
+            <div className="mt-32 pt-12 border-t border-slate-100 flex flex-col md:flex-row justify-between items-end gap-10">
+              <div className="max-w-sm space-y-3">
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">Legal Information</p>
+                <p className="text-[11px] font-medium text-slate-400 italic leading-[1.6]">
+                  This document is a digital representation of a medical scan processed via Care AI. It is provided for summary and reference—final clinical interpretation belongs to a licensed medical professional.
+                </p>
+              </div>
+              <div className="text-right space-y-3">
+                <div className="h-16 w-64 border-b border-slate-100 mb-2 relative flex items-center justify-center grayscale">
+                  <p className="font-serif italic text-3xl text-slate-200 select-none tracking-tighter">Care AI Authenticated</p>
                 </div>
-                <div className="text-right space-y-3">
-                   <div className="h-16 w-64 border-b border-slate-100 mb-2 relative flex items-center justify-center grayscale">
-                      <p className="font-serif italic text-3xl text-slate-200 select-none tracking-tighter">Care AI Authenticated</p>
-                   </div>
-                   <div className="space-y-1 text-right">
-                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Digital Manifest Seal</p>
-                      <p className="text-[9px] font-bold text-slate-300 tabular-nums uppercase">VERIFIED: {new Date(record.created_at).toISOString()}</p>
-                   </div>
+                <div className="space-y-1 text-right">
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Digital Manifest Seal</p>
+                  <p className="text-[9px] font-bold text-slate-300 tabular-nums uppercase">VERIFIED: {new Date(record.created_at).toISOString()}</p>
                 </div>
-             </div>
+              </div>
+            </div>
           </div>
         </CardContent>
       </Card>

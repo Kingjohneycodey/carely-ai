@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { 
   Stethoscope, Camera, MessageCircle, AlertTriangle, Upload, 
   Pill, Activity, TrendingUp, ChevronRight, Bell, Heart,
-  ShieldCheck, ArrowUpRight, Zap, Target, Loader2,
+  ShieldCheck, ArrowUpRight, Target, Loader2,
   FileText
 } from "lucide-react";
 import Link from "next/link";
@@ -15,10 +15,10 @@ import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 
 const quickActions = [
-  { icon: Stethoscope, label: "Check Symptoms", to: "/symptoms", color: "bg-primary/10 text-primary" },
-  { icon: MessageCircle, label: "Chat Doctor", to: "/doctors", color: "bg-success/10 text-success" },
-  { icon: Activity, label: "Track Vitals", to: "/vitals", color: "bg-indigo-50 text-indigo-600" },
-  { icon: Upload, label: "AI Smart Scan", to: "/upload", color: "bg-warning/10 text-warning" },
+  { icon: Stethoscope, label: "Check Symptoms", to: "/symptoms", color: "text-blue-600", bg: "bg-blue-50" },
+  { icon: MessageCircle, label: "Consult Doctor", to: "/doctors", color: "text-emerald-600", bg: "bg-emerald-50" },
+  { icon: Activity, label: "Track Vitals", to: "/vitals", color: "text-indigo-600", bg: "bg-indigo-50" },
+  { icon: Camera, label: "Image Diagnosis", to: "/image-diagnosis", color: "text-amber-600", bg: "bg-amber-50" },
 ];
 
 export default function Dashboard() {
@@ -46,187 +46,174 @@ export default function Dashboard() {
     fetchData();
   }, []);
 
-  const getLatestVital = (type: string) => {
-    return vitals.find(v => v.type === type);
-  };
-
   return (
-    <div className="space-y-8 max-w-7xl animate-in fade-in slide-in-from-bottom-6 duration-1000">
-      {/* Premium Greeting Hero */}
-      <div className="relative overflow-hidden bg-card rounded-[40px] border border-primary/5 shadow-2xl p-8 md:p-12">
-        <div className="absolute top-0 right-0 p-12 opacity-5 scale-150 rotate-12">
-           <Zap className="h-64 w-64 text-primary" />
+    <div className="space-y-6 max-w-7xl mx-auto pb-20 animate-in fade-in duration-500 font-sans">
+      {/* Modern Greeting */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+           <h1 className="text-3xl font-bold tracking-tight text-slate-900">
+             Welcome back, {user?.full_name?.split(' ')[0] || "User"}
+           </h1>
+           <p className="text-slate-500 mt-1">Here is a summary of your health activity today.</p>
         </div>
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-8">
-           <div className="space-y-2">
-              <div className="flex items-center gap-2 mb-2">
-                 <Badge variant="secondary" className="bg-primary/10 text-primary border-none rounded-lg px-3 py-1 font-black uppercase tracking-widest text-[10px]">Premium Member</Badge>
-                 <Badge variant="secondary" className="bg-emerald-100 text-emerald-700 border-none rounded-lg px-3 py-1 font-black uppercase tracking-widest text-[10px]">Lagos, NG</Badge>
-              </div>
-              <h1 className="font-display text-4xl md:text-5xl font-black tracking-tight leading-tight">
-                Good day, <span className="text-primary">{user?.full_name?.split(' ')[0] || "Adebayo"}</span> 👋
-              </h1>
-              <p className="text-muted-foreground text-lg font-medium max-w-md">
-                Your health ecosystem is tuned and synchronized. 
-                <span className="text-foreground font-bold"> Everything looks stable today.</span>
-              </p>
-           </div>
-           <div className="flex flex-col gap-3 shrink-0">
-             <div className="flex items-center gap-4 p-5 bg-muted/20 backdrop-blur-xl rounded-3xl border border-white shadow-inner">
-                <div className="h-10 w-10 bg-white rounded-xl flex items-center justify-center shadow-lg">
-                   <ShieldCheck className="h-5 w-5 text-emerald-500" />
-                </div>
-                <div>
-                   <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Digital Security</p>
-                   <p className="text-sm font-bold">Encrypted & Verified</p>
-                </div>
-             </div>
-           </div>
+        <div className="flex items-center gap-3">
+           <Button variant="outline" className="rounded-lg h-10 gap-2">
+              <Bell className="h-4 w-4" /> Notifications
+           </Button>
+           <Button className="rounded-lg h-10 gap-2 bg-slate-900">
+              <PlusIcon className="h-4 w-4" /> New Record
+           </Button>
         </div>
       </div>
 
-      {/* Quick Actions Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+      {/* Quick Actions */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {quickActions.map((a) => (
           <Link key={a.label} href={a.to}>
-            <Card className="rounded-[32px] hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 cursor-pointer border-none shadow-xl group">
-              <CardContent className="p-6 flex flex-col items-center text-center gap-5">
-                <div className={cn("h-20 w-20 rounded-[28px] flex items-center justify-center transition-transform group-hover:scale-110 shadow-inner", a.color)}>
-                  <a.icon className="h-10 w-10" />
+            <Card className="hover:border-primary/50 transition-all cursor-pointer shadow-sm group border-slate-200">
+              <CardContent className="p-4 flex items-center gap-4">
+                <div className={cn("h-12 w-12 rounded-lg flex items-center justify-center shrink-0", a.bg)}>
+                  <a.icon className={cn("h-6 w-6", a.color)} />
                 </div>
-                <div className="space-y-1">
-                   <span className="text-base font-bold block">{a.label}</span>
-                   <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-60 group-hover:opacity-100 transition-opacity">Launch Service</span>
-                </div>
+                <span className="font-semibold text-sm text-slate-700">{a.label}</span>
               </CardContent>
             </Card>
           </Link>
         ))}
       </div>
 
-      <div className="grid lg:grid-cols-3 gap-8">
-        {/* Real-time Health Monitor */}
-        <Card className="lg:col-span-1 rounded-[40px] border-none shadow-2xl bg-card overflow-hidden">
-          <CardContent className="p-10">
-            <div className="flex items-center justify-between mb-10">
-              <h3 className="font-display text-2xl font-bold">Health Score</h3>
-              <div className="h-10 w-10 bg-primary/5 rounded-xl flex items-center justify-center">
-                 <Target className="h-5 w-5 text-primary" />
-              </div>
-            </div>
-            
-            <div className="flex flex-col items-center justify-center py-6 mb-10">
-              <div className="relative h-48 w-48">
-                <svg className="h-48 w-48 -rotate-90 drop-shadow-2xl" viewBox="0 0 120 120">
-                  <circle cx="60" cy="60" r="54" fill="none" stroke="hsl(var(--muted)/0.2)" strokeWidth="8" />
-                  <circle cx="60" cy="60" r="54" fill="none" stroke="hsl(var(--primary))" strokeWidth="8"
-                    strokeDasharray={`${82 * 3.4} ${100 * 3.4}`}
-                    strokeLinecap="round"
-                    className="transition-all duration-1000 ease-in-out"
-                  />
-                </svg>
-                <div className="absolute inset-0 flex flex-col items-center justify-center animate-in zoom-in duration-500 delay-500">
-                  <span className="font-display text-5xl font-black text-primary">82</span>
-                  <span className="text-[11px] font-black uppercase tracking-widest text-muted-foreground">Optimal</span>
-                </div>
-              </div>
-            </div>
+      <div className="grid lg:grid-cols-3 gap-6">
+        {/* Health Insights */}
+        <div className="lg:col-span-2 space-y-6">
+           <div className="grid md:grid-cols-2 gap-6">
+              <Card className="shadow-sm border-slate-200">
+                 <CardHeader className="pb-2">
+                    <CardTitle className="text-base font-bold flex items-center gap-2">
+                       <Activity className="h-4 w-4 text-primary" /> Recent Vitals
+                    </CardTitle>
+                 </CardHeader>
+                 <CardContent>
+                    {isLoading ? (
+                      <div className="h-24 bg-slate-50 animate-pulse rounded-lg" />
+                    ) : vitals.length > 0 ? (
+                       <div className="space-y-4 pt-2">
+                         {vitals.slice(0, 3).map((v, i) => (
+                            <div key={i} className="flex justify-between items-center text-sm border-b border-slate-50 pb-3 last:border-0 last:pb-0">
+                               <span className="text-slate-500 font-medium uppercase text-[10px] tracking-wider">{v.type.replace('_', ' ')}</span>
+                               <span className="font-bold text-slate-900">{v.value} {v.unit}</span>
+                            </div>
+                         ))}
+                       </div>
+                    ) : (
+                       <p className="text-sm text-slate-400 py-4 text-center">No vitals tracked recently.</p>
+                    )}
+                 </CardContent>
+              </Card>
 
-            <div className="space-y-6 pt-4 border-t border-border/50">
-              {[
-                { label: "Vitals Consistency", val: 85, color: "bg-blue-500" },
-                { label: "Medical Compliance", val: 94, color: "bg-emerald-500" },
-                { label: "AI Insights Utilized", val: 72, color: "bg-amber-500" }
-              ].map(stat => (
-                <div key={stat.label} className="space-y-2.5">
-                  <div className="flex justify-between text-xs font-bold uppercase tracking-wider">
-                    <span className="text-muted-foreground">{stat.label}</span>
-                    <span className="text-foreground">{stat.val}%</span>
-                  </div>
-                  <Progress value={stat.val} className="h-2 rounded-full bg-muted/20" />
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+              <Card className="shadow-sm border-slate-200">
+                 <CardHeader className="pb-2">
+                    <CardTitle className="text-base font-bold flex items-center gap-2">
+                       <FileText className="h-4 w-4 text-primary" /> Reports Status
+                    </CardTitle>
+                 </CardHeader>
+                 <CardContent>
+                    <div className="space-y-4 pt-2">
+                       <div className="flex justify-between items-center text-sm">
+                          <span className="text-slate-500">Synced Records</span>
+                          <span className="font-bold">{records.length}</span>
+                       </div>
+                       <div className="flex justify-between items-center text-sm">
+                          <span className="text-slate-500">AI Confidence</span>
+                          <span className="font-bold text-emerald-600">92%</span>
+                       </div>
+                    </div>
+                 </CardContent>
+              </Card>
+           </div>
 
-        {/* Dynamic Activity Feed */}
-        <Card className="lg:col-span-2 rounded-[40px] border-none shadow-2xl bg-white overflow-hidden">
-          <CardContent className="p-10 h-full flex flex-col">
-            <div className="flex items-center justify-between mb-10">
-              <div className="flex items-center gap-3">
-                 <div className="h-10 w-10 bg-amber-500/10 rounded-xl flex items-center justify-center">
-                    <HistoryIcon />
+           {/* History Feed */}
+           <Card className="shadow-sm border-slate-200">
+              <CardHeader className="flex flex-row items-center justify-between pb-4">
+                 <CardTitle className="text-lg font-bold">Health History</CardTitle>
+                 <Link href="/records">
+                    <Button variant="ghost" size="sm" className="text-primary font-bold">View All</Button>
+                 </Link>
+              </CardHeader>
+              <CardContent className="space-y-1">
+                 {isLoading ? (
+                    [1, 2, 3].map(i => <div key={i} className="h-16 bg-slate-50 animate-pulse rounded-lg mb-3" />)
+                 ) : records.length > 0 ? (
+                    records.slice(0, 5).map((r, i) => (
+                       <div key={i} className="flex items-center gap-4 p-4 rounded-xl hover:bg-slate-50 transition-colors border-b border-slate-50 last:border-0 cursor-pointer group">
+                          <div className="h-10 w-10 rounded-lg bg-slate-100 flex items-center justify-center shrink-0">
+                             <FileText className="h-5 w-5 text-slate-400 group-hover:text-primary transition-colors" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                             <p className="font-bold text-slate-900 truncate">{r.title}</p>
+                             <p className="text-xs text-slate-400 font-medium">{r.type} • {new Date(r.created_at).toLocaleDateString()}</p>
+                          </div>
+                          <ChevronRight className="h-4 w-4 text-slate-300" />
+                       </div>
+                    ))
+                 ) : (
+                    <div className="py-12 text-center">
+                       <p className="text-slate-400 text-sm">Your health timeline starts here.</p>
+                       <Button variant="link" className="text-primary" asChild><Link href="/upload">Upload your first report</Link></Button>
+                    </div>
+                 )}
+              </CardContent>
+           </Card>
+        </div>
+
+        {/* Sidebar/Context Cards */}
+        <div className="space-y-6">
+           <Card className="bg-slate-900 text-white border-none shadow-lg rounded-2xl">
+              <CardContent className="p-6 space-y-4">
+                 <div className="h-10 w-10 bg-white/20 rounded-xl flex items-center justify-center">
+                    <Target className="h-5 w-5 text-white" />
                  </div>
-                 <h3 className="font-display text-2xl font-bold">Recent History</h3>
-              </div>
-              <Link href="/records" className="text-sm font-bold text-primary px-4 py-2 hover:bg-primary/5 rounded-xl transition-all flex items-center gap-1">
-                View Wallet <ArrowUpRight className="h-4 w-4" />
-              </Link>
-            </div>
+                 <div>
+                    <h3 className="text-lg font-bold">Health Score</h3>
+                    <p className="text-white/60 text-sm">Your overall wellness index based on 30-day trends.</p>
+                 </div>
+                 <div className="flex items-end gap-2">
+                    <span className="text-4xl font-black">82</span>
+                    <span className="text-white/40 text-sm font-bold mb-1 uppercase tracking-widest">/ 100</span>
+                 </div>
+                 <Progress value={82} className="h-2 bg-white/10" />
+              </CardContent>
+           </Card>
 
-            <div className="flex-1 space-y-4">
-              {isLoading ? (
-                [1, 2, 3, 4].map(i => (
-                  <div key={i} className="h-20 w-full bg-muted shadow-inner rounded-3xl animate-pulse" />
-                ))
-              ) : records.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-full text-center py-10 opacity-60">
-                   <div className="h-16 w-16 bg-muted rounded-full flex items-center justify-center mb-4">
-                      <ShieldCheck className="h-8 w-8 text-muted-foreground/30" />
-                   </div>
-                   <p className="font-bold text-lg">No records found yet.</p>
-                   <p className="text-sm max-w-xs">Upload your first lab result to get personalized AI insights.</p>
-                </div>
-              ) : (
-                records.slice(0, 4).map((item, i) => (
-                  <div key={i} className="group flex items-center gap-5 p-5 rounded-[28px] bg-slate-50 border border-slate-100 hover:bg-white hover:shadow-xl hover:border-transparent transition-all duration-300 cursor-pointer">
-                    <div className="h-14 w-14 rounded-2xl bg-white flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform shrink-0">
-                      {item.type === "Diagnosis" && <Stethoscope className="h-6 w-6 text-rose-500" />}
-                      {item.type === "Lab Report" && <Activity className="h-6 w-6 text-blue-500" />}
-                      {item.type === "Prescription" && <Pill className="h-6 w-6 text-amber-500" />}
-                      {!["Diagnosis", "Lab Report", "Prescription"].includes(item.type) && <FileText className="h-6 w-6 text-slate-500" />}
+           <Card className="shadow-sm border-slate-200">
+              <CardContent className="p-6 space-y-4">
+                 <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Security Status</p>
+                 <div className="flex items-center gap-3">
+                    <ShieldCheck className="h-5 w-5 text-emerald-500" />
+                    <div>
+                       <p className="text-sm font-bold">Data Encrypted</p>
+                       <p className="text-[10px] text-slate-400">End-to-end health data protection</p>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-lg font-bold truncate group-hover:text-primary transition-colors">{item.title}</p>
-                      <div className="flex items-center gap-3 mt-0.5">
-                         <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-60">{item.type}</span>
-                         <div className="w-1 h-1 bg-border rounded-full" />
-                         <span className="text-xs font-semibold text-muted-foreground">{new Date(item.created_at).toLocaleDateString()}</span>
-                      </div>
-                    </div>
-                    <ChevronRight className="h-5 w-5 text-muted-foreground/30 group-hover:text-primary group-hover:translate-x-1 transition-all shrink-0" />
-                  </div>
-                ))
-              )}
-            </div>
+                 </div>
+              </CardContent>
+           </Card>
 
-            <div className="mt-10 p-6 bg-primary/5 rounded-[32px] border border-primary/10 flex items-center justify-between">
-               <div className="flex items-center gap-4">
-                  <div className="h-10 w-10 bg-primary/10 rounded-xl flex items-center justify-center">
-                     <Bell className="h-5 w-5 text-primary" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold">New Notification</p>
-                    <p className="text-xs text-muted-foreground">Your 3-month fasting glucose trend is ready.</p>
-                  </div>
-               </div>
-               <Button variant="ghost" className="rounded-xl font-bold text-primary">View</Button>
-            </div>
-          </CardContent>
-        </Card>
+           <div className="p-6 bg-slate-50 rounded-2xl border border-slate-100">
+              <h4 className="font-bold text-sm mb-2">Did you know?</h4>
+              <p className="text-xs text-slate-500 leading-relaxed italic">
+                Drinking at least 2 liters of water daily in warm climates like Nigeria can significantly improve your vital consistency.
+              </p>
+           </div>
+        </div>
       </div>
     </div>
   );
 }
 
-function HistoryIcon() {
+function PlusIcon(props: any) {
   return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-amber-600">
-      <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
-      <path d="M3 3v5h5" />
-      <path d="M12 7v5l4 2" />
+    <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M5 12h14" />
+      <path d="M12 5v14" />
     </svg>
   );
 }
-

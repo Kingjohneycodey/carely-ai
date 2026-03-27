@@ -1,194 +1,291 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
-import { Mic, Send, ChevronRight, MapPin, Clock, Thermometer, ArrowRight } from "lucide-react";
+import { api } from "@/lib/api";
+import { toast } from "sonner";
+import {
+  Mic, Send, ChevronRight, Clock, Activity,
+  Stethoscope, CheckCircle2, RotateCcw, Loader2,
+  AlertTriangle, ArrowRight, User, Sparkles
+} from "lucide-react";
 import Link from "next/link";
+import { cn } from "@/lib/utils";
 
-const bodyParts = [
-  "Head", "Eyes", "Throat", "Chest", "Abdomen", "Back", "Arms", "Legs", "Skin", "Joints"
-];
+type Step = "input" | "questions" | "result";
 
-const suggestedSymptoms = [
-  "Headache", "Fever", "Cough", "Fatigue", "Nausea", "Body aches", "Sore throat", "Dizziness"
-];
+interface Question {
+  id: string;
+  question: string;
+  options: string[];
+}
+
+interface AssessmentResult {
+  condition: string;
+  severity: "Low" | "Moderate" | "High";
+  confidence: number;
+  summary: string;
+  alternatives: { name: string; confidence: number }[];
+  actions: { step: string; title: string; desc: string }[];
+}
 
 export default function SymptomChecker() {
-  const [step, setStep] = useState<"input" | "questions" | "result">("input");
+  const [step, setStep] = useState<Step>("input");
   const [text, setText] = useState("");
-  const [selectedParts, setSelectedParts] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [questions, setQuestions] = useState<Question[]>([]);
+  const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [result, setResult] = useState<AssessmentResult | null>(null);
 
-  if (step === "result") {
+  const handleStartAnalysis = async () => {
+    if (!text.trim()) {
+      toast.error("Please describe your symptoms");
+      return;
+    }
+    setIsLoading(true);
+    try {
+      const response = await api.post("/health/symptoms/analyze", {
+        symptoms: text,
+        step: "initial"
+      });
+      setQuestions(response.data.questions);
+      setStep("questions");
+    } catch (error) {
+      toast.error("AI analysis failed. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleFinalAnalysis = async () => {
+    if (Object.keys(answers).length < questions.length) {
+      toast.error("Please answer all questions for accuracy");
+      return;
+    }
+    setIsLoading(true);
+    try {
+      const context = Object.entries(answers).map(([id, opt]) => {
+        const q = questions.find(q => q.id === id);
+        return { question: q?.question, answer: opt };
+      });
+      const response = await api.post("/health/symptoms/analyze", {
+        symptoms: text,
+        step: "final",
+        context
+      });
+      setResult(response.data);
+      setStep("result");
+    } catch (error) {
+      toast.error("Assessment failed. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const reset = () => {
+    setStep("input");
+    setText("");
+    setAnswers({});
+    setResult(null);
+  };
+
+  if (step === "result" && result) {
     return (
-      <div className="max-w-3xl space-y-6">
-        <div>
-          <h1 className="font-display text-2xl font-bold mb-1">Diagnosis Result</h1>
-          <p className="text-muted-foreground text-sm">Based on your symptoms and health history</p>
+      <div className="max-w-4xl mx-auto space-y-6 animate-in fade-in duration-500 font-sans pb-20">
+        <div className="flex items-center justify-between">
+           <Button variant="ghost" onClick={reset} className="gap-2">
+              <RotateCcw className="h-4 w-4" /> Start Over
+           </Button>
+           <Badge className={cn(
+             "px-4 py-1.5 rounded-full border-none font-bold",
+             result.severity === "High" ? "bg-red-500 text-white" : 
+             result.severity === "Moderate" ? "bg-amber-500 text-white" : "bg-emerald-500 text-white"
+           )}>
+             {result.severity} Priority Level
+           </Badge>
         </div>
 
-        {/* Primary Condition */}
-        <Card className="border-warning/30 bg-warning/5">
-          <CardContent className="p-6">
-            <div className="flex items-start justify-between mb-4">
-              <div>
-                <Badge className="bg-warning/20 text-warning border-warning/30 mb-2">Moderate Severity</Badge>
-                <h2 className="font-display text-xl font-bold">Malaria (Suspected)</h2>
-                <p className="text-muted-foreground text-sm mt-1">Based on fever, headache, and body aches lasting 3 days</p>
+        <div className="grid md:grid-cols-3 gap-6">
+           <Card className="md:col-span-2 border-slate-200 shadow-sm rounded-2xl overflow-hidden">
+              <CardHeader className="bg-slate-50 border-b border-slate-100 p-8">
+                 <div className="flex items-center justify-between mb-4">
+                    <span className="text-[10px] uppercase font-bold text-slate-400 tracking-widest">AI Assessment Result</span>
+                    <span className="text-sm font-bold text-slate-900">{result.confidence}% Confidence</span>
+                 </div>
+                 <h2 className="text-3xl font-bold text-slate-900 leading-tight">{result.condition}</h2>
+                 <p className="text-slate-500 font-medium mt-2 leading-relaxed">{result.summary}</p>
+              </CardHeader>
+              <CardContent className="p-8 space-y-8">
+                 <div className="space-y-6">
+                    <h3 className="font-bold text-slate-900 border-b border-slate-50 pb-2">Recommended Steps</h3>
+                    <div className="grid gap-6">
+                       {result.actions.map((item, i) => (
+                         <div key={i} className="flex gap-4">
+                            <div className="h-8 w-8 rounded-full bg-slate-900 text-white flex items-center justify-center shrink-0 text-xs font-bold mt-0.5">
+                               {item.step}
+                            </div>
+                            <div>
+                               <p className="font-bold text-slate-900 text-sm">{item.title}</p>
+                               <p className="text-sm text-slate-500 font-medium leading-relaxed">{item.desc}</p>
+                            </div>
+                         </div>
+                       ))}
+                    </div>
+                 </div>
+              </CardContent>
+           </Card>
+
+           <div className="space-y-6">
+              <Card className="border-slate-200 shadow-sm">
+                 <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-bold">Alternative Conditions</CardTitle>
+                 </CardHeader>
+                 <CardContent className="space-y-4 pt-2">
+                    {result.alternatives.map((alt, i) => (
+                       <div key={i} className="flex justify-between items-center text-sm border-b border-slate-50 pb-3 last:border-0 last:pb-0">
+                          <span className="font-semibold text-slate-700">{alt.name}</span>
+                          <span className="text-slate-400 text-xs">{alt.confidence}%</span>
+                       </div>
+                    ))}
+                 </CardContent>
+              </Card>
+
+              <div className="grid gap-3">
+                 <Button className="w-full bg-slate-900 font-bold h-12" asChild>
+                    <Link href="/doctors">Chat with a Doctor</Link>
+                 </Button>
+                 <p className="text-[10px] text-slate-400 text-center leading-relaxed">
+                    ⚠️ This is an AI assessment. Always consult a healthcare provider for confirmation.
+                 </p>
               </div>
-              <div className="text-right">
-                <div className="font-display text-3xl font-bold text-warning">74%</div>
-                <span className="text-xs text-muted-foreground">Confidence</span>
-              </div>
-            </div>
-            <div className="flex gap-2 text-xs text-muted-foreground">
-              <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> 3 days duration</span>
-              <span className="flex items-center gap-1"><Thermometer className="h-3 w-3" /> High temperature</span>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Alternative Conditions */}
-        <div className="grid sm:grid-cols-2 gap-3">
-          <Card><CardContent className="p-4 flex items-center justify-between">
-            <div><p className="text-sm font-medium">Typhoid Fever</p><p className="text-xs text-muted-foreground">15% confidence</p></div>
-            <Badge variant="outline" className="text-xs">Low</Badge>
-          </CardContent></Card>
-          <Card><CardContent className="p-4 flex items-center justify-between">
-            <div><p className="text-sm font-medium">Viral Infection</p><p className="text-xs text-muted-foreground">11% confidence</p></div>
-            <Badge variant="outline" className="text-xs">Low</Badge>
-          </CardContent></Card>
+           </div>
         </div>
-
-        {/* Action Plan */}
-        <Card>
-          <CardContent className="p-6">
-            <h3 className="font-display font-semibold mb-4">Recommended Action Plan</h3>
-            <div className="space-y-3">
-              {[
-                { step: "1", title: "Immediate Care", desc: "Take Paracetamol 500mg every 6 hours. Rest and increase fluid intake." },
-                { step: "2", title: "Seek Confirmation", desc: "Visit a clinic within 24 hours for a Malaria RDT (Rapid Diagnostic Test)." },
-                { step: "3", title: "Avoid", desc: "Do not take Aspirin. Avoid self-medicating with antimalarials without confirmation." },
-                { step: "4", title: "Monitor", desc: "If fever exceeds 39°C or you experience confusion, activate Emergency Mode." },
-              ].map(item => (
-                <div key={item.step} className="flex gap-3">
-                  <div className="h-7 w-7 rounded-full bg-primary/10 text-primary flex items-center justify-center text-sm font-bold shrink-0 mt-0.5">
-                    {item.step}
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium">{item.title}</p>
-                    <p className="text-sm text-muted-foreground">{item.desc}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        <div className="flex flex-wrap gap-3">
-          <Link href="/doctors"><Button variant="hero">Book a Doctor</Button></Link>
-          <Link href="/facilities"><Button variant="outline">Find Pharmacy</Button></Link>
-          <Button variant="outline">Save to Wallet</Button>
-        </div>
-
-        <p className="text-xs text-muted-foreground border-t border-border pt-4">
-          ⚠️ This is an AI-assisted assessment and not a medical diagnosis. Always consult a qualified healthcare provider for confirmation and treatment.
-        </p>
       </div>
     );
   }
 
   if (step === "questions") {
     return (
-      <div className="max-w-2xl space-y-6">
-        <div>
-          <h1 className="font-display text-2xl font-bold mb-1">Follow-up Questions</h1>
-          <p className="text-muted-foreground text-sm">Help us narrow down the assessment</p>
+      <div className="max-w-2xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-6 duration-700 font-sans">
+        <div className="text-center space-y-2 pb-6 border-b border-slate-100">
+           <h1 className="text-2xl font-bold">Clarifying Details</h1>
+           <p className="text-slate-500">Please provide more information to refine the AI analysis.</p>
         </div>
-        {[
-          { q: "How long have you been experiencing these symptoms?", opts: ["Less than 24 hours", "1-3 days", "3-7 days", "More than a week"] },
-          { q: "How would you rate the intensity?", opts: ["Mild", "Moderate", "Severe", "Very Severe"] },
-          { q: "Have you taken any medication?", opts: ["Paracetamol", "Ibuprofen", "Antimalarials", "None"] },
-          { q: "Any associated symptoms?", opts: ["Chills/Sweating", "Loss of appetite", "Joint pain", "Vomiting"] },
-        ].map((item, i) => (
-          <Card key={i}>
-            <CardContent className="p-4">
-              <p className="text-sm font-medium mb-3">{item.q}</p>
-              <div className="flex flex-wrap gap-2">
-                {item.opts.map(opt => (
-                  <button key={opt} className="px-3 py-1.5 rounded-lg border border-border text-sm hover:bg-accent hover:border-primary/30 transition-colors">
-                    {opt}
-                  </button>
-                ))}
+
+        <div className="space-y-10">
+           {questions.map((q) => (
+              <div key={q.id} className="space-y-5">
+                 <p className="text-lg font-bold text-slate-900">{q.question}</p>
+                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {q.options.map(opt => (
+                      <button 
+                        key={opt}
+                        onClick={() => setAnswers(prev => ({ ...prev, [q.id]: opt }))}
+                        className={cn(
+                          "px-6 py-4 rounded-xl border text-sm font-bold transition-all text-left",
+                          answers[q.id] === opt 
+                            ? "bg-slate-900 text-white border-slate-900 shadow-md" 
+                            : "bg-white border-slate-200 text-slate-600 hover:border-slate-400"
+                        )}
+                      >
+                         {opt}
+                      </button>
+                    ))}
+                 </div>
               </div>
-            </CardContent>
-          </Card>
-        ))}
-        <Button variant="hero" onClick={() => setStep("result")} className="w-full h-11">
-          Get Diagnosis <ArrowRight className="ml-1 h-4 w-4" />
-        </Button>
+           ))}
+        </div>
+
+        <div className="pt-8 border-t border-slate-100 flex gap-4">
+           <Button variant="ghost" onClick={reset} className="font-bold">Cancel</Button>
+           <Button 
+             className="flex-1 bg-slate-900 font-bold h-12 text-base" 
+             onClick={handleFinalAnalysis}
+             disabled={isLoading}
+           >
+              {isLoading ? <Loader2 className="h-5 w-5 animate-spin mr-2" /> : <Activity className="h-5 w-5 mr-2" />}
+              Complete Assessment
+           </Button>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-3xl space-y-6">
-      <div>
-        <h1 className="font-display text-2xl font-bold mb-1">Symptom Checker</h1>
-        <p className="text-muted-foreground text-sm">Describe your symptoms to get an AI-powered assessment</p>
+    <div className="max-w-4xl mx-auto space-y-10 animate-in fade-in duration-700 font-sans pb-20">
+      <div className="space-y-2 border-b border-slate-100 pb-10">
+        <h1 className="text-4xl font-bold tracking-tight text-slate-900">Symptom Checker</h1>
+        <p className="text-slate-500 text-lg max-w-lg leading-relaxed font-medium">Describe how you feel, and AI will analyze potential conditions within seconds.</p>
       </div>
 
-      {/* Text Input */}
-      <Card>
-        <CardContent className="p-4">
-          <Textarea
-            value={text}
-            onChange={e => setText(e.target.value)}
-            placeholder="Describe your symptoms... e.g., I've had a headache and fever for 3 days"
-            className="min-h-[100px] resize-none border-0 p-0 focus-visible:ring-0 text-base"
-          />
-          <div className="flex items-center justify-between mt-3 pt-3 border-t border-border">
-            <Button variant="ghost" size="sm"><Mic className="h-4 w-4 mr-1" /> Voice</Button>
-            <Button variant="hero" size="sm" onClick={() => setStep("questions")}>
-              <Send className="h-4 w-4 mr-1" /> Analyze
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+      <div className="grid lg:grid-cols-3 gap-10">
+        <div className="lg:col-span-2 space-y-8">
+           <Card className="border-slate-200 shadow-sm rounded-2xl overflow-hidden">
+              <CardContent className="p-6">
+                 <Textarea
+                   value={text}
+                   onChange={e => setText(e.target.value)}
+                   placeholder="Describe your symptoms in your own words..."
+                   className="min-h-[220px] resize-none border-none p-0 focus-visible:ring-0 text-lg font-medium text-slate-900 placeholder:text-slate-300"
+                 />
+                 <div className="flex items-center justify-between mt-6 pt-6 border-t border-slate-50">
+                    <Button variant="ghost" className="gap-2 text-slate-400 hover:text-slate-900 font-bold">
+                       <Mic className="h-4 w-4" /> Voice Input
+                    </Button>
+                    <Button 
+                      className="bg-slate-900 px-8 font-bold h-12" 
+                      onClick={handleStartAnalysis}
+                      disabled={isLoading || !text.trim()}
+                    >
+                       {isLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Send className="h-4 w-4 mr-2" />}
+                       Analyze Now
+                    </Button>
+                 </div>
+              </CardContent>
+           </Card>
 
-      {/* Quick Symptoms */}
-      <div>
-        <p className="text-sm font-medium mb-3">Quick Select</p>
-        <div className="flex flex-wrap gap-2">
-          {suggestedSymptoms.map(s => (
-            <button key={s} className="px-3 py-1.5 rounded-lg border border-border text-sm hover:bg-accent hover:border-primary/30 transition-colors">
-              {s}
-            </button>
-          ))}
+           <div className="grid md:grid-cols-2 gap-4">
+              <div className="p-5 border border-slate-100 rounded-xl bg-slate-50/50 space-y-3">
+                 <div className="h-10 w-10 bg-white border border-slate-100 rounded-lg flex items-center justify-center">
+                    <Sparkles className="h-5 w-5 text-primary" />
+                 </div>
+                 <p className="text-sm font-bold">Comprehensive Analysis</p>
+                 <p className="text-xs text-slate-400 font-medium leading-relaxed">Cross-referenced with clinical databases and African health context.</p>
+              </div>
+              <div className="p-5 border border-slate-100 rounded-xl bg-slate-50/50 space-y-3">
+                 <div className="h-10 w-10 bg-white border border-slate-100 rounded-lg flex items-center justify-center">
+                    <AlertTriangle className="h-5 w-5 text-amber-500" />
+                 </div>
+                 <p className="text-sm font-bold">Clinical Escalation</p>
+                 <p className="text-xs text-slate-400 font-medium leading-relaxed">High-severity results will prompt immediate emergency contact.</p>
+              </div>
+           </div>
+        </div>
+
+        <div className="space-y-6">
+           <Card className="border-slate-200 shadow-sm bg-slate-900 text-white rounded-2xl px-2">
+              <CardHeader className="pb-2">
+                 <CardTitle className="text-base">Quick Symptoms</CardTitle>
+                 <CardDescription className="text-white/40">Select to add to description</CardDescription>
+              </CardHeader>
+              <CardContent className="grid gap-2 pt-2">
+                 {[
+                   "Severe Headache", "High Fever", "Persistent Cough", 
+                   "Abdominal Pain", "Chest Pressure", "Fatigue"
+                 ].map(s => (
+                   <button 
+                     key={s} 
+                     onClick={() => setText(prev => prev + (prev ? ', ' : '') + s)}
+                     className="w-full text-left px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-xs font-bold hover:bg-white/10 transition-all text-white/80"
+                   >
+                     + {s}
+                   </button>
+                 ))}
+              </CardContent>
+           </Card>
         </div>
       </div>
-
-      {/* Body Map (simplified) */}
-      <Card>
-        <CardContent className="p-4">
-          <p className="text-sm font-medium mb-3">Select affected area</p>
-          <div className="grid grid-cols-5 gap-2">
-            {bodyParts.map(part => (
-              <button
-                key={part}
-                onClick={() => setSelectedParts(
-                  selectedParts.includes(part) ? selectedParts.filter(p => p !== part) : [...selectedParts, part]
-                )}
-                className={`py-2.5 rounded-lg border text-sm font-medium transition-all ${
-                  selectedParts.includes(part) ? "bg-primary text-primary-foreground border-primary" : "border-border hover:border-primary/30"
-                }`}
-              >
-                {part}
-              </button>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 }
