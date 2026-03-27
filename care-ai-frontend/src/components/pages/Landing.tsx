@@ -43,10 +43,9 @@ const features = [
 ];
 
 const plans = [
-  { name: "Free", price: "₦0", period: "/month", features: ["5 AI symptom checks/month", "Health tips", "Emergency info"], popular: false },
-  { name: "Care Basic", price: "₦500", period: "/month", features: ["Unlimited AI consults", "Health wallet", "Prescription scanning", "Medication reminders"], popular: false },
-  { name: "Care Plus", price: "₦2,500", period: "/month", features: ["Everything in Basic", "2 doctor chat sessions", "Lab result analysis", "Priority support"], popular: true },
-  { name: "Care Pro", price: "₦5,000", period: "/month", features: ["Everything in Plus", "Unlimited doctor access", "Voice calls", "Chronic care tracking"], popular: false },
+  { name: "Care Basic", price: "₦0", period: "/month", features: ["5 AI symptom checks/month", "Health tips", "Emergency info", "Health wallet"], popular: false },
+  { name: "Care Plus", price: "₦2,500", period: "/month", features: ["Everything in Basic", "Unlimited AI consults", "2 doctor chat sessions", "Lab result analysis",], popular: true },
+  { name: "Care Pro", price: "₦5,000", period: "/month", features: ["Everything in Plus", "Unlimited doctor access", "Priority support", "Chronic care tracking"], popular: false },
 ];
 
 const stats = [
@@ -170,13 +169,12 @@ export default function LandingPage() {
             <h2 className="font-display text-3xl md:text-4xl font-bold mb-4">Simple, transparent pricing</h2>
             <p className="text-muted-foreground text-lg">Healthcare you can actually afford.</p>
           </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-5xl mx-auto">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
             {plans.map((plan) => (
               <div
                 key={plan.name}
-                className={`bg-card rounded-2xl border p-6 flex flex-col ${
-                  plan.popular ? "border-primary shadow-glow ring-1 ring-primary/20 relative" : "border-border"
-                }`}
+                className={`bg-card rounded-2xl border p-6 flex flex-col ${plan.popular ? "border-primary shadow-glow ring-1 ring-primary/20 relative" : "border-border"
+                  }`}
               >
                 {plan.popular && (
                   <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-xs font-semibold px-3 py-1 rounded-full">

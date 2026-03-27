@@ -4,10 +4,9 @@ import { Button } from "@/components/ui/button";
 import { CheckCircle2, CreditCard, Wallet, Download, ChevronRight } from "lucide-react";
 
 const plans = [
-  { name: "Free", price: "₦0", period: "/month", features: ["5 AI symptom checks/month", "Health tips", "Emergency info"], current: false },
-  { name: "Care Basic", price: "₦500", period: "/month", features: ["Unlimited AI consults", "Health wallet", "Prescription scanning", "Medication reminders"], current: true },
-  { name: "Care Plus", price: "₦2,500", period: "/month", features: ["Everything in Basic", "2 doctor chats", "Lab analysis", "Priority support"], current: false },
-  { name: "Care Pro", price: "₦5,000", period: "/month", features: ["Everything in Plus", "Unlimited doctors", "Voice calls", "Chronic care"], current: false },
+  { name: "Care Basic", price: "₦0", period: "/month", features: ["5 AI symptom checks/month", "Health tips", "Emergency info", "Health wallet"], popular: false, current: false },
+  { name: "Care Plus", price: "₦2,500", period: "/month", features: ["Everything in Basic", "Unlimited AI consults", "2 doctor chat sessions", "Lab result analysis",], popular: true, current: true },
+  { name: "Care Pro", price: "₦5,000", period: "/month", features: ["Everything in Plus", "Unlimited doctor access", "Priority support", "Chronic care tracking"], popular: false, current: false },
 ];
 
 const transactions = [
@@ -42,11 +41,11 @@ export default function PlansPayments() {
       </Card>
 
       {/* Plans */}
-      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 pt-2">
         {plans.map(plan => (
-          <Card key={plan.name} className={plan.current ? "border-primary ring-1 ring-primary/20 relative" : ""}>
+          <Card key={plan.name} className={plan.current ? "border-primary ring-1 ring-primary/20 relative overflow-visible" : ""}>
             {plan.current && (
-              <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-[10px] font-semibold px-2.5 py-0.5 rounded-full">
+              <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-[12px] font-semibold px-3 py-1 rounded-full">
                 Current Plan
               </span>
             )}

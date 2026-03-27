@@ -4,9 +4,40 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Heart, Mail, Lock, User, Phone, ArrowRight, Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { api } from "@/lib/api";
 
 export default function SignupPage() {
   const [showPw, setShowPw] = useState(false);
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
+
+  const handleSignup = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    try {
+      await api.post("/users/", {
+        email,
+        password,
+        full_name: `${firstName} ${lastName}`,
+      });
+      toast.success("Account created!", {
+        description: "Please log in with your new credentials.",
+      });
+      router.push("/login");
+    } catch (error: any) {
+      toast.error("Signup failed", {
+        description: error.response?.data?.detail || "Something went wrong",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen flex">
@@ -38,53 +69,69 @@ export default function SignupPage() {
           <h1 className="font-display text-2xl font-bold mb-1">Create account</h1>
           <p className="text-muted-foreground text-sm mb-8">Start your health journey today</p>
 
-          <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
+          <form className="space-y-4" onSubmit={handleSignup}>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
                 <Label>First Name</Label>
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input placeholder="Adebayo" className="pl-10" />
+                  <Input 
+                    placeholder="Adebayo" 
+                    className="pl-10" 
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    required
+                  />
                 </div>
               </div>
               <div className="space-y-2">
                 <Label>Last Name</Label>
-                <Input placeholder="Okonkwo" />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label>Phone Number</Label>
-              <div className="relative">
-                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input placeholder="+234 801 234 5678" className="pl-10" />
+                <Input 
+                  placeholder="Okonkwo" 
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  required
+                />
               </div>
             </div>
             <div className="space-y-2">
               <Label>Email</Label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input placeholder="you@email.com" className="pl-10" />
+                <Input 
+                  type="email"
+                  placeholder="you@email.com" 
+                  className="pl-10" 
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
               </div>
             </div>
             <div className="space-y-2">
               <Label>Password</Label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input type={showPw ? "text" : "password"} placeholder="Create a strong password" className="pl-10 pr-10" />
+                <Input 
+                  type={showPw ? "text" : "password"} 
+                  placeholder="Create a strong password" 
+                  className="pl-10 pr-10" 
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
                 <button type="button" onClick={() => setShowPw(!showPw)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
                   {showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
               </div>
             </div>
             <label className="flex items-start gap-2 text-sm text-muted-foreground">
-              <input type="checkbox" className="rounded border-border mt-1" />
+              <input type="checkbox" className="rounded border-border mt-1" required />
               <span>I agree to the <a href="#" className="text-primary hover:underline">Terms of Service</a> and <a href="#" className="text-primary hover:underline">Privacy Policy</a></span>
             </label>
-            <Link href="/onboarding">
-              <Button variant="hero" className="w-full h-11 mt-2">
-                Create Account <ArrowRight className="ml-1 h-4 w-4" />
-              </Button>
-            </Link>
+            <Button type="submit" variant="hero" className="w-full h-11 mt-2" disabled={isLoading}>
+              {isLoading ? "Creating Account..." : "Create Account"} <ArrowRight className="ml-1 h-4 w-4" />
+            </Button>
           </form>
 
           <div className="relative my-6">

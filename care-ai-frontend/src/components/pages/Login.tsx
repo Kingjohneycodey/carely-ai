@@ -6,17 +6,43 @@ import { Heart, Mail, Lock, Eye, EyeOff, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
+import { api } from "@/lib/api";
 
 export default function LoginPage() {
   const [showPw, setShowPw] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const { login } = useAuth();
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    toast.success("Welcome back!", {
-      description: "You have successfully signed in to Care AI.",
-    });
-    router.push("/dashboard");
+    setIsLoading(true);
+    try {
+      const formData = new FormData();
+      formData.append("username", email);
+      formData.append("password", password);
+      
+      const response = await api.post("/login/access-token", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      
+      await login(response.data.access_token);
+      toast.success("Welcome back!", {
+        description: "You have successfully signed in to Care AI.",
+      });
+      router.push("/dashboard");
+    } catch (error: any) {
+      toast.error("Login failed", {
+        description: error.response?.data?.detail || "Invalid credentials",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -53,17 +79,33 @@ export default function LoginPage() {
 
           <form className="space-y-4" onSubmit={handleLogin}>
             <div className="space-y-2">
-              <Label htmlFor="email">Email or Phone</Label>
+              <Label htmlFor="email">Email</Label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input id="email" placeholder="you@email.com" className="pl-10" />
+                <Input 
+                  id="email" 
+                  type="email"
+                  placeholder="you@email.com" 
+                  className="pl-10" 
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
               </div>
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input id="password" type={showPw ? "text" : "password"} placeholder="••••••••" className="pl-10 pr-10" />
+                <Input 
+                  id="password" 
+                  type={showPw ? "text" : "password"} 
+                  placeholder="••••••••" 
+                  className="pl-10 pr-10" 
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
                 <button type="button" onClick={() => setShowPw(!showPw)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
                   {showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
@@ -76,8 +118,8 @@ export default function LoginPage() {
               </label>
               <a href="#" className="text-primary hover:underline">Forgot password?</a>
             </div>
-            <Button type="submit" variant="hero" className="w-full h-11 mt-2">
-              Log in <ArrowRight className="ml-1 h-4 w-4" />
+            <Button type="submit" variant="hero" className="w-full h-11 mt-2" disabled={isLoading}>
+              {isLoading ? "Logging in..." : "Log in"} <ArrowRight className="ml-1 h-4 w-4" />
             </Button>
           </form>
 

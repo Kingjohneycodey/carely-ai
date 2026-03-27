@@ -38,6 +38,7 @@ next-env.d.ts
 # backend specific (generic)
 __pycache__/
 *.py[cod]
+*$py.class
 .venv/
 env/
 venv/
@@ -48,4 +49,29 @@ target/
 .settings/
 .idea/
 .vscode/
+
+# Python testing & coverage
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+
+# Python type checking
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pyre/
+
+# Environments (additional)
+.python-version
+.pyenv/
+
+# FastAPI / Uvicorn
+logs/
+*.log
+
 
