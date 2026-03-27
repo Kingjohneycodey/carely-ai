@@ -28,11 +28,25 @@ def create_user(
         email=user_in.email,
         hashed_password=security.get_password_hash(user_in.password),
         full_name=user_in.full_name,
+        role=user_in.role or "USER",
         is_superuser=False,
     )
     db.add(user)
     db.commit()
     db.refresh(user)
+
+    if user.role == "DOCTOR":
+        from app.models.care import Doctor
+        doctor = Doctor(
+            user_id=user.id,
+            name=user.full_name,
+            specialty="General Practitioner", # Default
+            price="₦5,000",
+            available="Online"
+        )
+        db.add(doctor)
+        db.commit()
+
     return user
 
 @router.get("/me", response_model=UserSchema)

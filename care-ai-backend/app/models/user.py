@@ -12,6 +12,7 @@ class User(Base):
     hashed_password = Column(String(255), nullable=False)
     is_active = Column(Boolean(), default=True)
     is_superuser = Column(Boolean(), default=False)
+    role = Column(String(50), default="USER") # USER, DOCTOR, ADMIN
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
@@ -19,3 +20,5 @@ class User(Base):
     medical_records = relationship("MedicalRecord", back_populates="user", cascade="all, delete-orphan")
     vitals = relationship("Vital", back_populates="user", cascade="all, delete-orphan")
     wallet_items = relationship("WalletItem", back_populates="user", cascade="all, delete-orphan")
+    doctor_profile = relationship("Doctor", back_populates="user", uselist=False)
+    appointments = relationship("Appointment", back_populates="user")

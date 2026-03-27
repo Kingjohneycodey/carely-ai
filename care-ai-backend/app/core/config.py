@@ -18,6 +18,12 @@ class Settings(BaseSettings):
     MYSQL_PASSWORD: str = ""
     MYSQL_DB: str = "care_ai"
     
+    # Interswitch
+    ISW_MERCHANT_CODE: str = "MX6072"
+    ISW_PAYABLE_CODE: str = "9405967"
+    ISW_CLIENT_ID: Optional[str] = None
+    ISW_CLIENT_SECRET: Optional[str] = None
+    
     SQLALCHEMY_DATABASE_URI: Optional[str] = None
 
     @validator("SQLALCHEMY_DATABASE_URI", pre=True)
