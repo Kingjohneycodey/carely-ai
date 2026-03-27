@@ -1,7 +1,10 @@
-import { useState } from "react";
+import { ChangeEvent, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
+import { api } from "@/lib/api";
+import { toast } from "@/hooks/use-toast";
 import { Camera, Upload, Image, Eye, Stethoscope, TestTube, FileText, Smile } from "lucide-react";
 
 const modes = [
@@ -14,7 +17,120 @@ const modes = [
 
 export default function ImageDiagnosis() {
   const [mode, setMode] = useState("skin");
-  const [hasImage, setHasImage] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string>("");
+  const [patientNotes, setPatientNotes] = useState("");
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [error, setError] = useState("");
+  const [result, setResult] = useState<{
+    condition: string;
+    confidence: number;
+    recommendation: string;
+    doctorSummary: string;
+    nextSteps: string[];
+  } | null>(null);
+
+  const cameraInputRef = useRef<HTMLInputElement>(null);
+  const uploadInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    return () => {
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
+    };
+  }, [previewUrl]);
+
+  const onSelectImage = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) {
+      return;
+    }
+
+    if (!file.type.startsWith("image/")) {
+      setError("Please select a valid image file.");
+      return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      setError("Image size must be 10MB or less.");
+      return;
+    }
+
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+    }
+
+    setSelectedFile(file);
+    setPreviewUrl(URL.createObjectURL(file));
+    setResult(null);
+    setError("");
+  };
+
+  const resetScan = () => {
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+    }
+    setSelectedFile(null);
+    setPreviewUrl("");
+    setResult(null);
+    setError("");
+    setPatientNotes("");
+  };
+
+  const analyzeImage = async () => {
+    if (!selectedFile) {
+      setError("Please upload an image before running analysis.");
+      return;
+    }
+
+    if (mode !== "skin") {
+      setError("Image AI is currently available only for Skin Condition mode.");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("image", selectedFile);
+
+    setIsAnalyzing(true);
+    setError("");
+
+    try {
+      const response = await api.post("/diagnosis/analyze", formData, {
+        params: {
+          patient_notes: patientNotes.trim() || undefined,
+        },
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      const data = response.data;
+      setResult({
+        condition: data?.skin_analysis?.condition ?? "Unknown",
+        confidence: data?.skin_analysis?.confidence ?? 0,
+        recommendation: data?.skin_analysis?.recommendation ?? "No recommendation provided.",
+        doctorSummary: data?.doctor_summary ?? "No doctor summary available.",
+        nextSteps: Array.isArray(data?.next_steps) ? data.next_steps : [],
+      });
+
+      toast({
+        title: "Analysis complete",
+        description: "AI diagnosis has been generated successfully.",
+      });
+    } catch (err: any) {
+      const detail = err?.response?.data?.detail;
+      const message = typeof detail === "string" ? detail : "Failed to analyze image. Please try again.";
+      setError(message);
+      toast({
+        title: "Analysis failed",
+        description: message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
 
   return (
     <div className="max-w-3xl space-y-6">
@@ -39,7 +155,7 @@ export default function ImageDiagnosis() {
       </div>
 
       {/* Upload Area */}
-      {!hasImage ? (
+      {!selectedFile ? (
         <Card className="border-dashed border-2">
           <CardContent className="p-12 flex flex-col items-center justify-center text-center">
             <div className="h-16 w-16 rounded-2xl bg-accent flex items-center justify-center mb-4">
@@ -50,43 +166,104 @@ export default function ImageDiagnosis() {
               Capture a live photo or select from your gallery. Supports JPEG, PNG up to 10MB.
             </p>
             <div className="flex gap-3">
-              <Button variant="hero" onClick={() => setHasImage(true)}>
+              <Button variant="hero" onClick={() => cameraInputRef.current?.click()}>
                 <Camera className="h-4 w-4 mr-1" /> Take Photo
               </Button>
-              <Button variant="outline" onClick={() => setHasImage(true)}>
+              <Button variant="outline" onClick={() => uploadInputRef.current?.click()}>
                 <Upload className="h-4 w-4 mr-1" /> Upload
               </Button>
             </div>
+            <input
+              ref={cameraInputRef}
+              type="file"
+              accept="image/*"
+              capture="environment"
+              className="hidden"
+              onChange={onSelectImage}
+            />
+            <input
+              ref={uploadInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={onSelectImage}
+            />
           </CardContent>
         </Card>
       ) : (
         <div className="space-y-6">
-          {/* Mock Result */}
+          {mode !== "skin" && (
+            <Card className="border-warning/30 bg-warning/5">
+              <CardContent className="p-4 text-sm">
+                Skin Condition mode is currently the only mode connected to live AI analysis.
+              </CardContent>
+            </Card>
+          )}
+
           <Card>
-            <CardContent className="p-6">
-              <div className="aspect-video bg-muted rounded-xl mb-4 flex items-center justify-center">
-                <span className="text-muted-foreground text-sm">Image preview area</span>
-              </div>
-              <div className="flex items-start justify-between mb-4">
-                <div>
-                  <Badge className="bg-warning/20 text-warning border-warning/30 mb-2">Moderate</Badge>
-                  <h3 className="font-display text-lg font-bold">Suspected Contact Dermatitis</h3>
-                  <p className="text-sm text-muted-foreground mt-1">Inflammatory skin reaction, likely from irritant exposure</p>
-                </div>
-                <div className="text-right">
-                  <div className="font-display text-2xl font-bold text-primary">82%</div>
-                  <span className="text-xs text-muted-foreground">Confidence</span>
-                </div>
-              </div>
-              <div className="bg-muted/50 rounded-xl p-4 space-y-2 text-sm">
-                <p className="font-medium">AI Analysis</p>
-                <p className="text-muted-foreground">The image shows erythematous patches with mild scaling consistent with contact dermatitis. No signs of secondary infection detected. Recommend topical hydrocortisone 1% cream and avoiding suspected irritants.</p>
-              </div>
+            <CardContent className="p-4 space-y-3">
+              <p className="text-sm font-medium">Patient notes (optional)</p>
+              <Textarea
+                value={patientNotes}
+                onChange={(e) => setPatientNotes(e.target.value)}
+                placeholder="Add symptoms or context for better analysis."
+                className="min-h-22.5"
+              />
             </CardContent>
           </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <div className="aspect-video bg-muted rounded-xl mb-4 overflow-hidden">
+                <img src={previewUrl} alt="Uploaded scan" className="h-full w-full object-cover" />
+              </div>
+
+              {!result ? (
+                <div className="bg-muted/50 rounded-xl p-4 text-sm text-muted-foreground">
+                  Click Analyze to run AI diagnosis on this image.
+                </div>
+              ) : (
+                <>
+                  <div className="flex items-start justify-between mb-4">
+                    <div>
+                      <Badge className="bg-primary/15 text-primary border-primary/30 mb-2">AI Result</Badge>
+                      <h3 className="font-display text-lg font-bold">{result.condition}</h3>
+                      <p className="text-sm text-muted-foreground mt-1">{result.recommendation}</p>
+                    </div>
+                    <div className="text-right">
+                      <div className="font-display text-2xl font-bold text-primary">
+                        {Math.round(result.confidence * 100)}%
+                      </div>
+                      <span className="text-xs text-muted-foreground">Confidence</span>
+                    </div>
+                  </div>
+                  <div className="bg-muted/50 rounded-xl p-4 space-y-2 text-sm">
+                    <p className="font-medium">Doctor Summary</p>
+                    <p className="text-muted-foreground">{result.doctorSummary}</p>
+                    {result.nextSteps.length > 0 && (
+                      <ul className="list-disc pl-5 text-muted-foreground space-y-1">
+                        {result.nextSteps.map((step) => (
+                          <li key={step}>{step}</li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                </>
+              )}
+            </CardContent>
+          </Card>
+
+          {error && (
+            <Card className="border-emergency/40 bg-emergency/5">
+              <CardContent className="p-4 text-sm text-emergency">{error}</CardContent>
+            </Card>
+          )}
+
           <div className="flex gap-3">
-            <Button variant="hero">Save to Wallet</Button>
-            <Button variant="outline" onClick={() => setHasImage(false)}>Scan Another</Button>
+            <Button variant="hero" onClick={analyzeImage} disabled={isAnalyzing || mode !== "skin"}>
+              {isAnalyzing ? "Analyzing..." : "Analyze Image"}
+            </Button>
+            <Button variant="outline" onClick={resetScan}>Scan Another</Button>
           </div>
         </div>
       )}
